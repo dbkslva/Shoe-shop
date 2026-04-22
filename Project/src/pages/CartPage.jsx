@@ -2,15 +2,22 @@ import { useState } from 'react'
 import Banner from '../components/Banner'
 import { useCart } from '../context/CartContext'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7070'
+
 function CartPage() {
-  const { cartItems, removeFromCart, totalPrice } = useCart()
+  const { cartItems, removeFromCart, totalPrice, clearCart } = useCart()
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
   const [agreement, setAgreement] = useState(false)
   const [formError, setFormError] = useState('')
+  const [submitError, setSubmitError] = useState('')
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
+    setSubmitError('')
+    setSubmitSuccess(false)
 
     // Базовая валидация формы заказа перед отправкой на сервер.
     if (!phone.trim()) {
@@ -29,6 +36,42 @@ function CartPage() {
     }
 
     setFormError('')
+
+    try {
+      setIsSubmitting(true)
+
+      const response = await fetch(`${API_BASE_URL}/api/order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          owner: {
+            phone: phone.trim(),
+            address: address.trim(),
+          },
+          items: cartItems.map((item) => ({
+            id: item.id,
+            price: item.price,
+            count: item.count,
+          })),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Не удалось оформить заказ. Попробуйте снова.')
+      }
+
+      setSubmitSuccess(true)
+      clearCart()
+      setPhone('')
+      setAddress('')
+      setAgreement(false)
+    } catch (error) {
+      setSubmitError(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -126,10 +169,22 @@ function CartPage() {
             {formError && <p className="text-danger">{formError}</p>}
 
             <button type="submit" className="btn btn-outline-secondary" disabled={cartItems.length === 0}>
-              Оформить
+              {isSubmitting ? 'Оформляем...' : 'Оформить'}
             </button>
           </form>
         </div>
+
+        {isSubmitting && (
+          <div className="preloader">
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
+        )}
+
+        {submitError && <p className="text-center text-danger mt-3">{submitError}</p>}
+        {submitSuccess && <p className="text-center text-success mt-3">Заказ успешно оформлен!</p>}
       </section>
     </>
   )

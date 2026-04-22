@@ -1,12 +1,11 @@
 import Banner from '../components/Banner'
+import Catalog from '../components/Catalog'
 
 function CatalogPage() {
   return (
     <>
       <Banner />
-      <section className="catalog">
-        <h2 className="text-center">Каталог</h2>
-      </section>
+      <Catalog />
     </>
   )
 }

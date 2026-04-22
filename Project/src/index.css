@@ -8,3 +8,34 @@ body {
   margin-left: calc(50% - 50vw);
   display: block;
 }
+
+/* Делаем колонки карточек одинаковой высоты в каждой строке. */
+.catalog .row > [class*='col-'],
+.top-sales .row > [class*='col-'] {
+  display: flex;
+  margin-bottom: 1rem;
+}
+
+/* Карточка занимает всю высоту колонки и растягивается по ширине. */
+.catalog-item-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Картинку не искажаем: сохраняем ее естественные пропорции. */
+.catalog-item-card .card-img-top {
+  width: 100%;
+  height: 280px;
+  object-fit: contain;
+  background: #fff;
+}
+
+/* Прижимаем кнопку вниз, чтобы карточки выглядели аккуратно и одинаково. */
+.catalog-item-card .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}

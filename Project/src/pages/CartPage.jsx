@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7070'
 
 function CartPage() {
-  const { cartItems, removeFromCart, totalPrice, clearCart } = useCart()
+  const { cartItems, removeFromCart, updateCartItemCount, totalPrice, clearCart } = useCart()
   const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
   const [agreement, setAgreement] = useState(false)
@@ -13,6 +13,18 @@ function CartPage() {
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  function buildValidOrderItems(items) {
+    return items
+      .filter((item) => Number.isInteger(item.id) && item.id > 0)
+      .filter((item) => Number.isFinite(item.price) && item.price > 0)
+      .filter((item) => Number.isInteger(item.count) && item.count >= 1 && item.count <= 10)
+      .map((item) => ({
+        id: item.id,
+        price: item.price,
+        count: item.count,
+      }))
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -35,6 +47,12 @@ function CartPage() {
       return
     }
 
+    const orderItems = buildValidOrderItems(cartItems)
+    if (orderItems.length !== cartItems.length || orderItems.length === 0) {
+      setFormError('Проверьте состав корзины: есть некорректные товары или количество')
+      return
+    }
+
     setFormError('')
 
     try {
@@ -50,11 +68,7 @@ function CartPage() {
             phone: phone.trim(),
             address: address.trim(),
           },
-          items: cartItems.map((item) => ({
-            id: item.id,
-            price: item.price,
-            count: item.count,
-          })),
+          items: orderItems,
         }),
       })
 
@@ -104,7 +118,25 @@ function CartPage() {
                     <td>{index + 1}</td>
                     <td>{item.title}</td>
                     <td>{item.size}</td>
-                    <td>{item.count}</td>
+                    <td>
+                      <div className="d-flex align-items-center justify-content-center">
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={() => updateCartItemCount(item.id, item.size, item.count - 1)}
+                        >
+                          -
+                        </button>
+                        <span className="mx-2">{item.count}</span>
+                        <button
+                          type="button"
+                          className="btn btn-outline-secondary btn-sm"
+                          onClick={() => updateCartItemCount(item.id, item.size, item.count + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </td>
                     <td>{item.price} руб.</td>
                     <td>{item.price * item.count} руб.</td>
                     <td>

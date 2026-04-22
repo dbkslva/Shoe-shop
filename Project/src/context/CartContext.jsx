@@ -50,6 +50,21 @@ export function CartProvider({ children }) {
     setCartItems((prevItems) => prevItems.filter((item) => !(item.id === id && item.size === size)))
   }
 
+  function updateCartItemCount(id, size, nextCount) {
+    setCartItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.id !== id || item.size !== size) {
+          return item
+        }
+
+        return {
+          ...item,
+          count: Math.max(1, Math.min(10, nextCount)),
+        }
+      }),
+    )
+  }
+
   function clearCart() {
     setCartItems([])
   }
@@ -66,6 +81,7 @@ export function CartProvider({ children }) {
       totalPrice,
       addToCart,
       removeFromCart,
+      updateCartItemCount,
       clearCart,
     }
   }, [cartItems])

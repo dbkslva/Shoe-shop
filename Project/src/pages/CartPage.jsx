@@ -1,8 +1,35 @@
+import { useState } from 'react'
 import Banner from '../components/Banner'
 import { useCart } from '../context/CartContext'
 
 function CartPage() {
   const { cartItems, removeFromCart, totalPrice } = useCart()
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [agreement, setAgreement] = useState(false)
+  const [formError, setFormError] = useState('')
+
+  function handleSubmit(event) {
+    event.preventDefault()
+
+    // Базовая валидация формы заказа перед отправкой на сервер.
+    if (!phone.trim()) {
+      setFormError('Введите телефон')
+      return
+    }
+
+    if (!address.trim()) {
+      setFormError('Введите адрес доставки')
+      return
+    }
+
+    if (!agreement) {
+      setFormError('Нужно согласиться с правилами доставки')
+      return
+    }
+
+    setFormError('')
+  }
 
   return (
     <>
@@ -57,6 +84,52 @@ function CartPage() {
             </table>
           </>
         )}
+      </section>
+
+      <section className="order">
+        <h2 className="text-center">Оформить заказ</h2>
+        <div className="card" style={{ maxWidth: '30rem', margin: '0 auto' }}>
+          <form className="card-body" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="phone">Телефон</label>
+              <input
+                className="form-control"
+                id="phone"
+                placeholder="Ваш телефон"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="address">Адрес доставки</label>
+              <input
+                className="form-control"
+                id="address"
+                placeholder="Адрес доставки"
+                value={address}
+                onChange={(event) => setAddress(event.target.value)}
+              />
+            </div>
+            <div className="form-group form-check">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                id="agreement"
+                checked={agreement}
+                onChange={(event) => setAgreement(event.target.checked)}
+              />
+              <label className="form-check-label" htmlFor="agreement">
+                Согласен с правилами доставки
+              </label>
+            </div>
+
+            {formError && <p className="text-danger">{formError}</p>}
+
+            <button type="submit" className="btn btn-outline-secondary" disabled={cartItems.length === 0}>
+              Оформить
+            </button>
+          </form>
+        </div>
       </section>
     </>
   )

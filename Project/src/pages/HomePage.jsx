@@ -1,4 +1,5 @@
 import Banner from '../components/Banner'
+import Catalog from '../components/Catalog'
 
 function HomePage() {
   return (
@@ -7,9 +8,7 @@ function HomePage() {
       <section className="top-sales">
         <h2 className="text-center">Хиты продаж!</h2>
       </section>
-      <section className="catalog">
-        <h2 className="text-center">Каталог</h2>
-      </section>
+      <Catalog />
     </>
   )
 }

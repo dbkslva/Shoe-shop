@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useCart } from '../context/CartContext'
 
 function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
+  const { positionsCount } = useCart()
 
   const handleSearchToggle = () => {
     if (!isSearchOpen) {
@@ -60,6 +62,9 @@ function Header() {
                     onClick={handleSearchToggle}
                   />
                   <Link className="header-controls-pic header-controls-cart" to="/cart.html">
+                    {positionsCount > 0 && (
+                      <div className="header-controls-cart-full">{positionsCount}</div>
+                    )}
                     <div className="header-controls-cart-menu" />
                   </Link>
                 </div>

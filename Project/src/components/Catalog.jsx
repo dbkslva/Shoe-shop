@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:7070";
 const ALL_CATEGORY = { id: 0, title: "Все" };
 const PAGE_SIZE = 6;
 
-function Catalog({ title = "Каталог" }) {
+function Catalog({ title = "Каталог", withSearch = false }) {
   // Локальное состояние каталога: категории, выбранная категория, товары и статусы загрузки.
   const [categories, setCategories] = useState([ALL_CATEGORY]);
   const [activeCategoryId, setActiveCategoryId] = useState(ALL_CATEGORY.id);
@@ -15,6 +15,14 @@ function Catalog({ title = "Каталог" }) {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryFromUrl = searchParams.get("q")?.trim() ?? "";
+  const [searchValue, setSearchValue] = useState(queryFromUrl);
+
+  useEffect(() => {
+    // Синхронизируем значение поля поиска с query-параметром URL.
+    setSearchValue(queryFromUrl);
+  }, [queryFromUrl]);
 
   // Формируем URL товаров в зависимости от выбранной категории.
   const itemsUrl = useMemo(() => {
@@ -24,8 +32,12 @@ function Catalog({ title = "Каталог" }) {
       url.searchParams.set("categoryId", String(activeCategoryId));
     }
 
+    if (withSearch && queryFromUrl) {
+      url.searchParams.set("q", queryFromUrl);
+    }
+
     return url.toString();
-  }, [activeCategoryId]);
+  }, [activeCategoryId, queryFromUrl, withSearch]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -119,6 +131,10 @@ function Catalog({ title = "Каталог" }) {
         url.searchParams.set("categoryId", String(activeCategoryId));
       }
 
+      if (withSearch && queryFromUrl) {
+        url.searchParams.set("q", queryFromUrl);
+      }
+
       const response = await fetch(url.toString());
       if (!response.ok) {
         throw new Error("Не удалось загрузить дополнительные товары");
@@ -134,9 +150,36 @@ function Catalog({ title = "Каталог" }) {
     }
   }
 
+  function handleSearchSubmit(event) {
+    event.preventDefault();
+
+    // Поиск запускается по submit и сохраняется в URL.
+    const nextQuery = searchValue.trim();
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (nextQuery) {
+      nextParams.set("q", nextQuery);
+    } else {
+      nextParams.delete("q");
+    }
+
+    setSearchParams(nextParams);
+  }
+
   return (
     <section className="catalog">
       <h2 className="text-center">{title}</h2>
+
+      {withSearch && (
+        <form className="catalog-search-form form-inline" onSubmit={handleSearchSubmit}>
+          <input
+            className="form-control"
+            placeholder="Поиск"
+            value={searchValue}
+            onChange={(event) => setSearchValue(event.target.value)}
+          />
+        </form>
+      )}
 
       {/* Пока грузятся категории — показываем лоадер категорий. */}
       {isCategoriesLoading ? (

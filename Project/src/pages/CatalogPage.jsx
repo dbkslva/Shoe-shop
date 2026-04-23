@@ -5,7 +5,7 @@ function CatalogPage() {
   return (
     <>
       <Banner />
-      <Catalog />
+      <Catalog withSearch />
     </>
   )
 }

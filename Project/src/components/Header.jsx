@@ -1,15 +1,23 @@
 import { useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 
 function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { positionsCount } = useCart()
+
+  const queryFromUrl = searchParams.get('q')?.trim() ?? ''
 
   const handleSearchToggle = () => {
     if (!isSearchOpen) {
+      // При открытии поиска на каталоге подставляем текущее значение q.
+      if (location.pathname === '/catalog.html' && queryFromUrl) {
+        setQuery(queryFromUrl)
+      }
       setIsSearchOpen(true)
       return
     }
